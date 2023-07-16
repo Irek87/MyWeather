@@ -8,8 +8,20 @@
 import UIKit
 import CoreLocation
 
+/*
+ Давай разбивать этот класс;
+ Напрашиваются истории про:
+ 1. Отдельный view для CurrentWeather
+ 2. Вынести сетевые запросы в отдельные классы в виде переиспользуемой логики
+ 3. Отдельный обработчик UICollectionView, который реализует delegate & datasource
+ 4. LocationManager, который возьмет на себя работу с геолокацией.
+ 5. Попытаться прикрутить UISearchController, чтобы не реализовать UI поиска вручную.
+ */
 class ViewController: UIViewController {
-    
+
+  // Давай попробуем сверстать кодом :)
+  // Через Storyboard сейчас уже не делают особо
+
     // MARK: IBOutlets
     @IBOutlet var cityNameLabel: UILabel!
     @IBOutlet var weatherConditionsLabel: UILabel!
@@ -25,6 +37,7 @@ class ViewController: UIViewController {
     
     // MARK: Variables
     let locationManager = CLLocationManager()
+  // Опасная история, лучше делать CurrentWeatherData?, но про структуры на нужно отдельно поговорить
     var currentWeatherData: CurrentWeatherData!
     var fiveDayWeatherData = FiveDayWeatherData(list: nil)
     let formatter = DateFormatter()
@@ -60,7 +73,10 @@ class ViewController: UIViewController {
     // MARK: startLocationManager
     func startLocationManager() {
         locationManager.requestWhenInUseAuthorization()
-        
+
+      /* Xcode жалуется
+       This method can cause UI unresponsiveness if invoked on the main thread. Instead, consider waiting for the `-locationManagerDidChangeAuthorization:` callback and checking `authorizationStatus` first
+       */
         if CLLocationManager.locationServicesEnabled() {
             locationManager.delegate = self
             locationManager.desiredAccuracy = kCLLocationAccuracyNearestTenMeters
@@ -70,6 +86,10 @@ class ViewController: UIViewController {
     }
     
     // MARK: updateCurrentWeather
+  /*
+   Тут прям напрашивается, чтобы у тебя был отдельный CurrentWeatherView,
+   в котором будет спрятана логика по скачивание данных и обновление view.
+   */
     func updateCurrentWeatherView() {
         cityNameLabel.text = currentWeatherData.name ?? "City not found"
         weatherConditionsLabel.text = currentWeatherData.weather?.first?.main ?? "-"
@@ -106,6 +126,9 @@ class ViewController: UIViewController {
     
     // MARK: updateCurrentLocationWeatherInfo
     func updateCurrentLocationWeatherInfo(latitude: Double, longtitude: Double) {
+      /* Проблема 1 – руками прописывать query не безопасно, легко опечататься, можно забыть кодировку и тд. Есть API, который может собрать тебе endpoint – https://developer.apple.com/documentation/foundation/urlcomponents Проблема 2 – longtitude.description. Конкретно здесь это ок, но этот метод дает строку, описывающую объект или структуру. То есть вызов этого метода у другого объекта может привести к другим результатам и лучше явно приводить к строке. В данном случае ты можешь использовать string interpolation: `?lat=\(latitude)&lo` (без .description)
+       */
+
         guard let urlCurrentWeather = URL(string: "https://api.openweathermap.org/data/2.5/weather?lat=\(latitude.description)&lon=\(longtitude.description)&appid=d5b36c5ddd04779bb494acf04cc0f9ae&units=metric"),
             let urlFiveDaysWeather = URL(string: "https://api.openweathermap.org/data/2.5/forecast?lat=\(latitude.description)&lon=\(longtitude.description)&appid=d5b36c5ddd04779bb494acf04cc0f9ae&units=metric") else { return }
         let task1 = URLSession.shared.dataTask(with: urlCurrentWeather) { data, response, error in
@@ -144,6 +167,11 @@ class ViewController: UIViewController {
     
     // MARK: updateDesiredCityWeatherInfo
     func updateDesiredCityWeatherInfo(desiredCity: String) {
+      /*
+       Те же проблемы. Рекомендую попробовать написать generic метод, куда можно вынести общую логику.
+       Так логика по загрузке у тебя дублируется;
+       func fetchData<T: Decodable>(url: URL, completion: () -> Result<T, Error>)
+       */
         guard let urlCurrentWeather = URL(string: "https://api.openweathermap.org/data/2.5/weather?q=\(desiredCity)&appid=d5b36c5ddd04779bb494acf04cc0f9ae&units=metric"),
             let urlFiveDaysWeather = URL(string: "https://api.openweathermap.org/data/2.5/forecast?q=\(desiredCity)&appid=d5b36c5ddd04779bb494acf04cc0f9ae&units=metric") else { return }
         let task1 = URLSession.shared.dataTask(with: urlCurrentWeather) { data, response, error in
@@ -217,6 +245,10 @@ extension ViewController: UICollectionViewDelegate, UICollectionViewDataSource, 
 }
 
 // MARK: UISearchBarDelegate
+/*
+ Возможно стоит попробовать SearchController https://developer.apple.com/documentation/uikit/uisearchcontroller.
+ Анимации и состояния он возьмет на себя
+ */
 extension ViewController: UISearchBarDelegate {
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
         if let desiredCity = searchBar.text {
