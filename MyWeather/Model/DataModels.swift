@@ -32,7 +32,7 @@ struct Weather: Decodable {
     let icon: String?
 }
 
-struct FiveDayWeatherData: Decodable {
+struct FiveDaysWeatherData: Decodable {
     let list: [List]?
 }
 

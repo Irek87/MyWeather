@@ -26,7 +26,7 @@ class ViewController: UIViewController {
     // MARK: Variables
     let locationManager = CLLocationManager()
     var currentWeatherData: CurrentWeatherData!
-    var fiveDayWeatherData = FiveDayWeatherData(list: nil)
+    var fiveDaysWeatherData = FiveDaysWeatherData(list: nil)
     let formatter = DateFormatter()
 
     // MARK: ViewDidLoad
@@ -106,78 +106,28 @@ class ViewController: UIViewController {
     
     // MARK: updateCurrentLocationWeatherInfo
     func updateCurrentLocationWeatherInfo(latitude: Double, longtitude: Double) {
-        guard let urlCurrentWeather = URL(string: "https://api.openweathermap.org/data/2.5/weather?lat=\(latitude.description)&lon=\(longtitude.description)&appid=d5b36c5ddd04779bb494acf04cc0f9ae&units=metric"),
-            let urlFiveDaysWeather = URL(string: "https://api.openweathermap.org/data/2.5/forecast?lat=\(latitude.description)&lon=\(longtitude.description)&appid=d5b36c5ddd04779bb494acf04cc0f9ae&units=metric") else { return }
-        let task1 = URLSession.shared.dataTask(with: urlCurrentWeather) { data, response, error in
-            if let error = error {
-                print(error.localizedDescription)
-            }
-            
-            guard let data = data else { return }
-            do {
-                self.currentWeatherData = try JSONDecoder().decode(CurrentWeatherData.self, from: data)
-                DispatchQueue.main.async {
-                    self.updateCurrentWeatherView()
-                }
-            } catch {
-                print(error.localizedDescription)
-            }
+        NetworkManager.shared.fetchCLCurrentWeatherData(latitude: latitude, longtitude: longtitude) { [unowned self] currentWeatherData in
+            self.currentWeatherData = currentWeatherData
+            updateCurrentWeatherView()
         }
-        let task2 = URLSession.shared.dataTask(with: urlFiveDaysWeather) { data, response, error in
-            if let error = error {
-                print(error.localizedDescription)
-            }
-            
-            guard let data = data else { return }
-            do {
-                self.fiveDayWeatherData = try JSONDecoder().decode(FiveDayWeatherData.self, from: data)
-                DispatchQueue.main.async {
-                    self.collectionView.reloadData()
-                }
-            } catch {
-                print(error.localizedDescription)
-            }
+        
+        NetworkManager.shared.fetchCLFiveDaysWeatherData(latitude: latitude, longtitude: longtitude) { [unowned self] fiveDaysWeatherData in
+            self.fiveDaysWeatherData = fiveDaysWeatherData
+            collectionView.reloadData()
         }
-        task1.resume()
-        task2.resume()
     }
     
     // MARK: updateDesiredCityWeatherInfo
     func updateDesiredCityWeatherInfo(desiredCity: String) {
-        guard let urlCurrentWeather = URL(string: "https://api.openweathermap.org/data/2.5/weather?q=\(desiredCity)&appid=d5b36c5ddd04779bb494acf04cc0f9ae&units=metric"),
-            let urlFiveDaysWeather = URL(string: "https://api.openweathermap.org/data/2.5/forecast?q=\(desiredCity)&appid=d5b36c5ddd04779bb494acf04cc0f9ae&units=metric") else { return }
-        let task1 = URLSession.shared.dataTask(with: urlCurrentWeather) { data, response, error in
-            if let error = error {
-                print(error.localizedDescription)
-            }
-            
-            guard let data = data else { return }
-            do {
-                self.currentWeatherData = try JSONDecoder().decode(CurrentWeatherData.self, from: data)
-                DispatchQueue.main.async {
-                    self.updateCurrentWeatherView()
-                }
-            } catch {
-                print(error.localizedDescription)
-            }
+        NetworkManager.shared.fetchDesiredCityCurrentWeatherData(desiredCity: desiredCity) { [unowned self] currentWeatherData in
+            self.currentWeatherData = currentWeatherData
+            updateCurrentWeatherView()
         }
-        let task2 = URLSession.shared.dataTask(with: urlFiveDaysWeather) { data, response, error in
-            if let error = error {
-                print(error.localizedDescription)
-            }
-            
-            guard let data = data else { return }
-            do {
-                self.fiveDayWeatherData = try JSONDecoder().decode(FiveDayWeatherData.self, from: data)
-                DispatchQueue.main.async {
-                    self.collectionView.reloadData()
-                }
-            } catch {
-                print(error.localizedDescription)
-            }
+                
+        NetworkManager.shared.fetchDesiredCityFiveDaysWeatherData(desiredCity: desiredCity) { [unowned self] fiveDaysWeatherData in
+            self.fiveDaysWeatherData = fiveDaysWeatherData
+            collectionView.reloadData()
         }
-        task1.resume()
-        task2.resume()
     }
 }
 
@@ -195,18 +145,18 @@ extension ViewController: UICollectionViewDelegate, UICollectionViewDataSource, 
     
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        fiveDayWeatherData.list?.count ?? 0
+        fiveDaysWeatherData.list?.count ?? 0
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "cell", for: indexPath) as! MyCollectionViewCell
         
         formatter.dateFormat = "dd.MM    HH"
-        let date =  Date(timeIntervalSince1970: fiveDayWeatherData.list?[indexPath.item].dt ?? 0)
+        let date =  Date(timeIntervalSince1970: fiveDaysWeatherData.list?[indexPath.item].dt ?? 0)
         cell.dateTimeLabel.text = formatter.string(from: date) + " h"
         
-        cell.iconImageView.image = UIImage(named: fiveDayWeatherData.list?[indexPath.item].weather?.first?.icon ?? "")
-        cell.temperatureLabel.text = Int(fiveDayWeatherData.list?[indexPath.item].main?.temp ?? 0).description + "°"
+        cell.iconImageView.image = UIImage(named: fiveDaysWeatherData.list?[indexPath.item].weather?.first?.icon ?? "")
+        cell.temperatureLabel.text = Int(fiveDaysWeatherData.list?[indexPath.item].main?.temp ?? 0).description + "°"
         
         return cell
     }
