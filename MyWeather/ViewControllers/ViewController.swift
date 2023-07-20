@@ -150,13 +150,8 @@ extension ViewController: UICollectionViewDelegate, UICollectionViewDataSource, 
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "cell", for: indexPath) as! MyCollectionViewCell
-        
-        formatter.dateFormat = "dd.MM    HH"
-        let date =  Date(timeIntervalSince1970: fiveDaysWeatherData.list?[indexPath.item].dt ?? 0)
-        cell.dateTimeLabel.text = formatter.string(from: date) + " h"
-        
-        cell.iconImageView.image = UIImage(named: fiveDaysWeatherData.list?[indexPath.item].weather?.first?.icon ?? "")
-        cell.temperatureLabel.text = Int(fiveDaysWeatherData.list?[indexPath.item].main?.temp ?? 0).description + "°"
+        guard let list = fiveDaysWeatherData.list?[indexPath.item] else { return cell }
+        cell.configure(with: list)
         
         return cell
     }

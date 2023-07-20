@@ -14,7 +14,7 @@ class NetworkManager {
     
     // MARK: fetchCLCurrentWeatherData
     func fetchCLCurrentWeatherData(latitude: Double, longtitude: Double, completion: @escaping (CurrentWeatherData) -> ()) {
-        guard let urlCurrentWeather = URL(string: "https://api.openweathermap.org/data/2.5/weather?lat=\(latitude.description)&lon=\(longtitude.description)&appid=d5b36c5ddd04779bb494acf04cc0f9ae&units=metric") else { return }
+        guard let urlCurrentWeather = URL(string: "https://api.openweathermap.org/data/2.5/weather?lat=\(latitude)&lon=\(longtitude)&appid=d5b36c5ddd04779bb494acf04cc0f9ae&units=metric") else { return }
         
         URLSession.shared.dataTask(with: urlCurrentWeather) { data, response, error in
             if let error = error {
@@ -35,7 +35,7 @@ class NetworkManager {
     
     // MARK: fetchCLFiveDaysWeatherData
     func fetchCLFiveDaysWeatherData(latitude: Double, longtitude: Double, completion: @escaping (FiveDaysWeatherData) -> ()) {
-        guard let urlFiveDaysWeather = URL(string: "https://api.openweathermap.org/data/2.5/forecast?lat=\(latitude.description)&lon=\(longtitude.description)&appid=d5b36c5ddd04779bb494acf04cc0f9ae&units=metric") else { return }
+        guard let urlFiveDaysWeather = URL(string: "https://api.openweathermap.org/data/2.5/forecast?lat=\(latitude)&lon=\(longtitude)&appid=d5b36c5ddd04779bb494acf04cc0f9ae&units=metric") else { return }
         
         URLSession.shared.dataTask(with: urlFiveDaysWeather) { data, response, error in
             if let error = error {
