@@ -37,7 +37,7 @@ class ViewController: UIViewController {
     let searchController = UISearchController()
     let locationManager = CLLocationManager()
     var currentWeatherData: CurrentWeatherData?
-    var fiveDaysWeatherData = FiveDaysWeatherData(list: nil)
+    var fiveDaysWeatherData: FiveDaysWeatherData?
     let formatter = DateFormatter()
 
     // MARK: ViewDidLoad
@@ -100,9 +100,11 @@ class ViewController: UIViewController {
         cityNameLabel.text = "Your City"
         cityNameLabel.font = UIFont(name: "Georgia-bold", size: 40)
         cityNameLabel.textColor = .white
+        cityNameLabel.textAlignment = .center
         view.addSubview(cityNameLabel)
         cityNameLabel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 20).isActive = true
         cityNameLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
+        cityNameLabel.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: 0.9).isActive = true
     }
     
     // MARK: setupWeatherConditionsLabel
@@ -119,7 +121,7 @@ class ViewController: UIViewController {
     // MARK: setupTemperatureLabel
     private func setupTemperatureLabel() {
         temperatureLabel.translatesAutoresizingMaskIntoConstraints = false
-        temperatureLabel.text = "25°C"
+        temperatureLabel.text = "--°C"
         temperatureLabel.font = UIFont(name: "Georgia-bold", size: 50)
         temperatureLabel.textColor = .white
         view.addSubview(temperatureLabel)
@@ -129,10 +131,10 @@ class ViewController: UIViewController {
     
     // MARK: setupHighAndLowTempStack
     private func setupHighAndLowTempStack() {
-        highTemperatureLabel.text = "H: 27°C"
+        highTemperatureLabel.text = "H: --°C"
         highTemperatureLabel.font = UIFont(name: "Georgia", size: 20)
         highTemperatureLabel.textColor = .white
-        lowTemperatureLabel.text = "L: 19°C"
+        lowTemperatureLabel.text = "L: --°C"
         lowTemperatureLabel.font = UIFont(name: "Georgia", size: 20)
         lowTemperatureLabel.textColor = .white
         highAndLowTempStackView.translatesAutoresizingMaskIntoConstraints = false
@@ -163,7 +165,7 @@ class ViewController: UIViewController {
     // MARK: configureSunriseStackView
     private func configureSunriseStackView() {
         sunriseImageView.image = UIImage(named: "sunrise_60p")
-        sunriseLabel.text = "05:00"
+        sunriseLabel.text = "hh:mm"
         sunriseLabel.font = UIFont(name: "Georgia", size: 20)
         sunriseLabel.textColor = .white
 //        sunriseStackView.translatesAutoresizingMaskIntoConstraints = false
@@ -177,7 +179,7 @@ class ViewController: UIViewController {
     // MARK: configureSunsetStackView
     private func configureSunsetStackView() {
         sunsetImageView.image = UIImage(named: "sunset _60p")
-        sunsetLabel.text = "19:00"
+        sunsetLabel.text = "hh:mm"
         sunsetLabel.font = UIFont(name: "Georgia", size: 20)
         sunsetLabel.textColor = .white
 //        sunsetStackView.translatesAutoresizingMaskIntoConstraints = false
@@ -223,31 +225,31 @@ class ViewController: UIViewController {
     // MARK: updateCurrentWeather
     func updateCurrentWeatherView() {
         cityNameLabel.text = currentWeatherData?.name ?? "City not found"
-        weatherConditionsLabel.text = currentWeatherData?.weather?.first?.main ?? "-"
-        if let currentTemperature = currentWeatherData?.main?.temp {
+        weatherConditionsLabel.text = currentWeatherData?.weather.first?.main
+        if let currentTemperature = currentWeatherData?.main.temp {
             temperatureLabel.text = Int(currentTemperature).description + "℃"
         } else {
             temperatureLabel.text = "℃"
         }
-        if let highTemperature = currentWeatherData?.main?.tempMax {
+        if let highTemperature = currentWeatherData?.main.tempMax {
             highTemperatureLabel.text = "H: " + Int(highTemperature).description + "°"
         } else {
             highTemperatureLabel.text = ""
         }
-        if let lowTemperature = currentWeatherData?.main?.tempMin {
+        if let lowTemperature = currentWeatherData?.main.tempMin {
             lowTemperatureLabel.text = "L: " + Int(lowTemperature).description + "°"
         } else {
             lowTemperatureLabel.text = ""
         }
         
         formatter.dateFormat = "HH:mm"
-        if let sunriseTimeInterval = currentWeatherData?.sys?.sunrise {
+        if let sunriseTimeInterval = currentWeatherData?.sys.sunrise {
             let dateSunrise = Date(timeIntervalSince1970: sunriseTimeInterval)
             sunriseLabel.text = formatter.string(from: dateSunrise)
         } else {
             sunriseLabel.text = ""
         }
-        if let sunsetTimeInterval = currentWeatherData?.sys?.sunset {
+        if let sunsetTimeInterval = currentWeatherData?.sys.sunset {
             let dateSunset = Date(timeIntervalSince1970: sunsetTimeInterval)
             sunsetLabel.text = formatter.string(from: dateSunset)
         } else {
@@ -296,15 +298,13 @@ extension ViewController: UICollectionViewDelegate, UICollectionViewDataSource, 
     
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        50
-//        fiveDaysWeatherData.list?.count ?? 0
+        fiveDaysWeatherData?.list.count ?? 0
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "cell", for: indexPath) as! MyCollectionViewCell
-//        guard let list = fiveDaysWeatherData.list?[indexPath.item] else { return cell }
-//        cell.configure(with: list)
-        cell.configure()
+        guard let list = fiveDaysWeatherData?.list[indexPath.item] else { return cell }
+        cell.configure(with: list)
         return cell
     }
     

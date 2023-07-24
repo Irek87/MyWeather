@@ -8,22 +8,22 @@
 import Foundation
 
 struct CurrentWeatherData: Decodable {
-    let weather: [Weather]?
-    let main: Main?
-    let name: String?
-    let sys: Sys?
+    let weather: [Weather]
+    let main: Main
+    let name: String
+    let sys: Sys
 }
 
 struct Sys: Decodable {
-    let sunrise: TimeInterval?
-    let sunset: TimeInterval?
+    let sunrise: TimeInterval
+    let sunset: TimeInterval
 }
 
 struct Main: Decodable {
-    let temp: Double?
-    let feelsLike: Double?
-    let tempMin: Double?
-    let tempMax: Double?
+    let temp: Double
+    let feelsLike: Double
+    let tempMin: Double
+    let tempMax: Double
     
     enum CodingKeys: String, CodingKey {
         case temp
@@ -34,17 +34,17 @@ struct Main: Decodable {
 }
 
 struct Weather: Decodable {
-    let main: String?
-    let description: String?
-    let icon: String?
+    let main: String
+    let description: String
+    let icon: String
 }
 
 struct FiveDaysWeatherData: Decodable {
-    let list: [List]?
+    let list: [List]
 }
 
 struct List: Decodable {
-    let dt: TimeInterval?
-    let main: Main?
-    let weather: [Weather]?
+    let dt: TimeInterval
+    let main: Main
+    let weather: [Weather]
 }

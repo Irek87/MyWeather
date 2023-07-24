@@ -55,15 +55,11 @@ class MyCollectionViewCell: UICollectionViewCell {
         temperatureLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor).isActive = true
     }
     
-    func configure(/*with list: List*/) {
-//        formatter.dateFormat = "dd.MM    HH"
-//        let date =  Date(timeIntervalSince1970: list.dt ?? 0)
-        dateTimeLabel.text = "22.07    11h"
-//        dateTimeLabel.text = formatter.string(from: date) + " h"
-        
-        iconImageView.image = UIImage(named: "01d")
-//        iconImageView.image = UIImage(named: list.weather?.first?.icon ?? "")
-        temperatureLabel.text = "25°"
-        //        temperatureLabel.text = "\(Int(list.main?.temp ?? 0))°"
+    func configure(with list: List) {
+        formatter.dateFormat = "dd.MM    HH"
+        let date =  Date(timeIntervalSince1970: list.dt)
+        dateTimeLabel.text = formatter.string(from: date) + " h"
+        iconImageView.image = UIImage(named: list.weather.first?.icon ?? "")
+        temperatureLabel.text = "\(Int(list.main.temp))°"
     }
 }
