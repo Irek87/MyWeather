@@ -21,9 +21,16 @@ struct Sys: Decodable {
 
 struct Main: Decodable {
     let temp: Double?
-    let feels_like: Double?
-    let temp_min: Double?
-    let temp_max: Double?
+    let feelsLike: Double?
+    let tempMin: Double?
+    let tempMax: Double?
+    
+    enum CodingKeys: String, CodingKey {
+        case temp
+        case feelsLike = "feels_like"
+        case tempMin = "temp_min"
+        case tempMax = "temp_max"
+        }
 }
 
 struct Weather: Decodable {
