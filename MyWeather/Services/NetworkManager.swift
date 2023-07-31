@@ -77,7 +77,9 @@ class NetworkManager {
     private func fetchWeatherData<T: Decodable>(url: URL, completion: @escaping (T) -> ()) {
         URLSession.shared.dataTask(with: url) { [unowned self] data, response, error in
             if let error = error {
-                delegate?.showAlert(errorDescription: error.localizedDescription)
+                DispatchQueue.main.async {
+                    self.delegate?.showAlert(errorDescription: "Please check your internet connection!")
+                }
             }
 
             guard let data = data else {
@@ -88,8 +90,10 @@ class NetworkManager {
                 DispatchQueue.main.async {
                     completion(weatherData)
                 }
-            } catch let error {
-                delegate?.showAlert(errorDescription: error.localizedDescription)
+            } catch {
+                DispatchQueue.main.async {
+                    self.delegate?.showAlert(errorDescription: "Something wrong. Please try again!")
+                }
             }
         }.resume()
     }
