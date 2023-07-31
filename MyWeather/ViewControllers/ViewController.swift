@@ -25,7 +25,7 @@ class ViewController: UIViewController {
     let sunsetStackView = UIStackView()
     let sunsetImageView = UIImageView()
     let sunsetLabel = UILabel()
-    var collectionView: UICollectionView = {
+    let collectionView: UICollectionView = {
         let layout = UICollectionViewFlowLayout()
         layout.scrollDirection = .vertical
         layout.minimumLineSpacing = 2
@@ -39,7 +39,7 @@ class ViewController: UIViewController {
     var currentWeatherData: CurrentWeatherData?
     var fiveDaysWeatherData: FiveDaysWeatherData?
     let formatter = DateFormatter()
-
+    
     // MARK: ViewDidLoad
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -56,8 +56,10 @@ class ViewController: UIViewController {
         collectionView.dataSource = self
         collectionView.delegate = self
         collectionView.register(MyCollectionViewCell.self, forCellWithReuseIdentifier: "cell")
-
-//        startLocationManager()
+        
+        NetworkManager.shared.delegate = self
+        
+        //        startLocationManager()
     }
     
     // MARK: setupBackgroundImageView
@@ -71,7 +73,7 @@ class ViewController: UIViewController {
         }()
         view.addSubview(backImageView)
     }
-     
+    
     // MARK: setupCurrentLocationButton
     private func setupCurrentLocationButton() {
         //currentLocation button
@@ -87,7 +89,7 @@ class ViewController: UIViewController {
     private func setupSearchController() {
         navigationItem.searchController = searchController
         searchController.searchBar.delegate = self
-//        searchController.obscuresBackgroundDuringPresentation = false // Нужно ли тут?
+        //        searchController.obscuresBackgroundDuringPresentation = false // Нужно ли тут?
         searchController.searchBar.placeholder = "Search city"
         searchController.searchBar.tintColor = .white
         searchController.searchBar.searchTextField.textColor = .white
@@ -168,7 +170,7 @@ class ViewController: UIViewController {
         sunriseLabel.text = "hh:mm"
         sunriseLabel.font = UIFont(name: "Georgia", size: 20)
         sunriseLabel.textColor = .white
-//        sunriseStackView.translatesAutoresizingMaskIntoConstraints = false
+        //        sunriseStackView.translatesAutoresizingMaskIntoConstraints = false
         sunriseStackView.axis = .vertical
         sunriseStackView.spacing = 4
         sunriseStackView.alignment = .center
@@ -182,7 +184,7 @@ class ViewController: UIViewController {
         sunsetLabel.text = "hh:mm"
         sunsetLabel.font = UIFont(name: "Georgia", size: 20)
         sunsetLabel.textColor = .white
-//        sunsetStackView.translatesAutoresizingMaskIntoConstraints = false
+        //        sunsetStackView.translatesAutoresizingMaskIntoConstraints = false
         sunsetStackView.axis = .vertical
         sunsetStackView.spacing = 4
         sunsetStackView.alignment = .center
@@ -222,7 +224,7 @@ class ViewController: UIViewController {
         }
     }
     
-    // MARK: updateCurrentWeather
+    // MARK: updateCurrentWeatherUI
     func updateCurrentWeatherView() {
         cityNameLabel.text = currentWeatherData?.name ?? "City not found"
         weatherConditionsLabel.text = currentWeatherData?.weather.first?.main
@@ -258,29 +260,37 @@ class ViewController: UIViewController {
     }
     
     // MARK: updateCurrentLocationWeatherInfo
-    func updateCurrentLocationWeatherInfo(latitude: Double, longtitude: Double) {
-        NetworkManager.shared.fetchCLCurrentWeatherData(latitude: latitude, longtitude: longtitude) { [unowned self] currentWeatherData in
-            self.currentWeatherData = currentWeatherData
-            updateCurrentWeatherView()
-        }
-        
-        NetworkManager.shared.fetchCLFiveDaysWeatherData(latitude: latitude, longtitude: longtitude) { [unowned self] fiveDaysWeatherData in
-            self.fiveDaysWeatherData = fiveDaysWeatherData
-            collectionView.reloadData()
-        }
+    private func updateCurrentLocationWeatherInfo(latitude: Double, longtitude: Double) {
+        //        NetworkManager.shared.fetchCLCurrentWeatherData(latitude: latitude, longtitude: longtitude) { [unowned self] currentWeatherData in
+        //            self.currentWeatherData = currentWeatherData
+        //            updateCurrentWeatherView()
+        //        }
+        //
+        //        NetworkManager.shared.fetchCLFiveDaysWeatherData(latitude: latitude, longtitude: longtitude) { [unowned self] fiveDaysWeatherData in
+        //            self.fiveDaysWeatherData = fiveDaysWeatherData
+        //            collectionView.reloadData()
+        //        }
     }
     
     // MARK: updateDesiredCityWeatherInfo
-    func updateDesiredCityWeatherInfo(desiredCity: String) {
-        NetworkManager.shared.fetchDesiredCityCurrentWeatherData(desiredCity: desiredCity) { [unowned self] currentWeatherData in
-            self.currentWeatherData = currentWeatherData
+    private func updateDesiredCityWeatherInfo(desiredCity: String) {
+        NetworkManager.shared.fetchData(city: desiredCity) { [unowned self] currentData in
+            currentWeatherData = currentData
             updateCurrentWeatherView()
-        }
-                
-        NetworkManager.shared.fetchDesiredCityFiveDaysWeatherData(desiredCity: desiredCity) { [unowned self] fiveDaysWeatherData in
-            self.fiveDaysWeatherData = fiveDaysWeatherData
+        } completionForecastData: { [unowned self] fiveDaysData in
+            fiveDaysWeatherData = fiveDaysData
             collectionView.reloadData()
         }
+    }
+}
+    
+    // MARK: NetworkManagerDelegate
+extension ViewController: NetworkManagerDelegate {
+    func showAlert(errorDescription: String) {
+        let alert = UIAlertController(title: "Error", message: errorDescription, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+        
+        self.present(alert, animated: true)
     }
 }
 
@@ -322,3 +332,4 @@ extension ViewController: UISearchBarDelegate {
         searchController.dismiss(animated: true)
     }
 }
+

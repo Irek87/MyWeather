@@ -7,91 +7,89 @@
 
 import Foundation
 
+protocol NetworkManagerDelegate: AnyObject {
+    func showAlert(errorDescription: String)
+}
+
 class NetworkManager {
     static let shared = NetworkManager()
+    weak var delegate: NetworkManagerDelegate?
+
+    private var currentWeatherUrlComponents: URLComponents = {
+        var components = URLComponents()
+        components.scheme = "https"
+        components.host = "api.openweathermap.org"
+        components.path = "/data/2.5/weather"
+        components.queryItems = [
+            URLQueryItem(name: "appid", value: "d5b36c5ddd04779bb494acf04cc0f9ae"),
+            URLQueryItem(name: "units", value: "metric")
+        ]
+        return components
+    }()
+    
+    private var forecastUrlComponents: URLComponents = {
+        var components = URLComponents()
+        components.scheme = "https"
+        components.host = "api.openweathermap.org"
+        components.path = "/data/2.5/forecast"
+        components.queryItems = [
+            URLQueryItem(name: "appid", value: "d5b36c5ddd04779bb494acf04cc0f9ae"),
+            URLQueryItem(name: "units", value: "metric")
+        ]
+        return components
+    }()
+    
     
     private init() {}
     
-    // MARK: fetchCLCurrentWeatherData
-    func fetchCLCurrentWeatherData(latitude: Double, longtitude: Double, completion: @escaping (CurrentWeatherData) -> ()) {
-        guard let urlCurrentWeather = URL(string: "https://api.openweathermap.org/data/2.5/weather?lat=\(latitude)&lon=\(longtitude)&appid=d5b36c5ddd04779bb494acf04cc0f9ae&units=metric") else { return }
-        
-        URLSession.shared.dataTask(with: urlCurrentWeather) { data, response, error in
-            if let error = error {
-                print(error.localizedDescription)
-            }
+    func fetchData(
+        latitude: String? = nil,
+        longtitude: String? = nil,
+        city: String? = nil,
+        completionCurrentData: @escaping (CurrentWeatherData?) -> (),
+        completionForecastData: @escaping (FiveDaysWeatherData?) -> ()
+    ) {
+        if let latitude = latitude, let longtitude = longtitude {
+            currentWeatherUrlComponents.queryItems?.insert(URLQueryItem(name: "lat", value: "\(latitude)"), at: 0)
+            currentWeatherUrlComponents.queryItems?.insert(URLQueryItem(name: "lon", value: "\(longtitude)"), at: 1)
             
-            guard let data = data else { return }
-            do {
-                let currentWeatherData = try JSONDecoder().decode(CurrentWeatherData.self, from: data)
-                DispatchQueue.main.async {
-                    completion(currentWeatherData)
-                }
-            } catch {
-                print(error.localizedDescription)
-            }
-        }.resume()
+            forecastUrlComponents.queryItems?.insert(URLQueryItem(name: "lat", value: "\(latitude)"), at: 0)
+            forecastUrlComponents.queryItems?.insert(URLQueryItem(name: "lon", value: "\(longtitude)"), at: 1)
+            
+            guard let currentWeatherURL = currentWeatherUrlComponents.url,
+                  let fiveDaysWeatherURL = forecastUrlComponents.url else { return }
+            
+            fetchWeatherData(url: currentWeatherURL, completion: completionCurrentData)
+            fetchWeatherData(url: fiveDaysWeatherURL, completion: completionForecastData)
+        } else if let city = city {
+            currentWeatherUrlComponents.queryItems?.insert(URLQueryItem(name: "q", value: "\(city)"), at: 0)
+            forecastUrlComponents.queryItems?.insert(URLQueryItem(name: "q", value: "\(city)"), at: 0)
+            
+            guard let currentWeatherURL = currentWeatherUrlComponents.url,
+                  let fiveDaysWeatherURL = forecastUrlComponents.url else { return }
+            
+            fetchWeatherData(url: currentWeatherURL, completion: completionCurrentData)
+            fetchWeatherData(url: fiveDaysWeatherURL, completion: completionForecastData)
+        }
     }
     
-    // MARK: fetchCLFiveDaysWeatherData
-    func fetchCLFiveDaysWeatherData(latitude: Double, longtitude: Double, completion: @escaping (FiveDaysWeatherData) -> ()) {
-        guard let urlFiveDaysWeather = URL(string: "https://api.openweathermap.org/data/2.5/forecast?lat=\(latitude)&lon=\(longtitude)&appid=d5b36c5ddd04779bb494acf04cc0f9ae&units=metric") else { return }
-        
-        URLSession.shared.dataTask(with: urlFiveDaysWeather) { data, response, error in
+    // MARK: getWeatherData
+    private func fetchWeatherData<T: Decodable>(url: URL, completion: @escaping (T) -> ()) {
+        URLSession.shared.dataTask(with: url) { [unowned self] data, response, error in
             if let error = error {
-                print(error.localizedDescription)
+                delegate?.showAlert(errorDescription: error.localizedDescription)
             }
-            
-            guard let data = data else { return }
+
+            guard let data = data else {
+                return
+            }
             do {
-                let fiveDaysWeatherData = try JSONDecoder().decode(FiveDaysWeatherData.self, from: data)
+                let weatherData = try JSONDecoder().decode(T.self, from: data)
                 DispatchQueue.main.async {
-                    completion(fiveDaysWeatherData)
+                    completion(weatherData)
                 }
-            } catch {
-                print(error.localizedDescription)
-            }
-        }.resume()
-    }
-    
-    // MARK: fetchDesiredCityCurrentWeatherData
-    func fetchDesiredCityCurrentWeatherData(desiredCity: String, completion: @escaping (CurrentWeatherData) -> ()) {
-        guard let urlCurrentWeather = URL(string: "https://api.openweathermap.org/data/2.5/weather?q=\(desiredCity)&appid=d5b36c5ddd04779bb494acf04cc0f9ae&units=metric") else { return }
-        
-        URLSession.shared.dataTask(with: urlCurrentWeather) { data, response, error in
-            if let error = error {
-                print(error.localizedDescription)
-            }
-            
-            guard let data = data else { return }
-            do {
-                let currentWeatherData = try JSONDecoder().decode(CurrentWeatherData.self, from: data)
-                DispatchQueue.main.async {
-                    completion(currentWeatherData)
-                }
-            } catch {
-                print(error.localizedDescription)
-            }
-        }.resume()
-    }
-    
-    // MARK: fetchDesiredCityFiveDaysWeatherData
-    func fetchDesiredCityFiveDaysWeatherData(desiredCity: String, completion: @escaping (FiveDaysWeatherData) -> ()) {
-        guard let urlFiveDaysWeather = URL(string: "https://api.openweathermap.org/data/2.5/forecast?q=\(desiredCity)&appid=d5b36c5ddd04779bb494acf04cc0f9ae&units=metric") else { return }
-        
-        URLSession.shared.dataTask(with: urlFiveDaysWeather) { data, response, error in
-            if let error = error {
-                print(error.localizedDescription)
-            }
-            
-            guard let data = data else { return }
-            do {
-                let fiveDaysWeatherData = try JSONDecoder().decode(FiveDaysWeatherData.self, from: data)
-                DispatchQueue.main.async {
-                    completion(fiveDaysWeatherData)
-                }
-            } catch {
-                print(error.localizedDescription)
+            } catch let error {
+                delegate?.showAlert(errorDescription: error.localizedDescription)
             }
         }.resume()
     }
