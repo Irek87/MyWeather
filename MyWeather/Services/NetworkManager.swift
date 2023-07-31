@@ -38,8 +38,8 @@ class NetworkManager: MessageProtocol {
     private init() {}
     
     func fetchData(
-        latitude: String? = nil,
-        longtitude: String? = nil,
+        latitude: Double? = nil,
+        longtitude: Double? = nil,
         city: String? = nil,
         completionCurrentData: @escaping (CurrentWeatherData?) -> (),
         completionForecastData: @escaping (FiveDaysWeatherData?) -> ()
@@ -74,7 +74,6 @@ class NetworkManager: MessageProtocol {
             if error != nil {
                 DispatchQueue.main.async {
                     self.showAlert(with: "Please check your internet connection!")
-                    
                 }
             }
 
@@ -84,6 +83,7 @@ class NetworkManager: MessageProtocol {
             do {
                 let weatherData = try JSONDecoder().decode(T.self, from: data)
                 DispatchQueue.main.async {
+                    print("\n=============Data loaded=============\n")
                     completion(weatherData)
                 }
             } catch {
