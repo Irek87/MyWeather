@@ -5,15 +5,10 @@
 //  Created by Reek i on 20.07.2023.
 //
 
-import Foundation
+import UIKit
 
-protocol NetworkManagerDelegate: AnyObject {
-    func showAlert(errorDescription: String)
-}
-
-class NetworkManager {
+class NetworkManager: MessageProtocol {
     static let shared = NetworkManager()
-    weak var delegate: NetworkManagerDelegate?
 
     private var currentWeatherUrlComponents: URLComponents = {
         var components = URLComponents()
@@ -76,9 +71,10 @@ class NetworkManager {
     // MARK: getWeatherData
     private func fetchWeatherData<T: Decodable>(url: URL, completion: @escaping (T) -> ()) {
         URLSession.shared.dataTask(with: url) { [unowned self] data, response, error in
-            if let error = error {
+            if error != nil {
                 DispatchQueue.main.async {
-                    self.delegate?.showAlert(errorDescription: "Please check your internet connection!")
+                    self.showAlert(with: "Please check your internet connection!")
+                    
                 }
             }
 
@@ -92,7 +88,7 @@ class NetworkManager {
                 }
             } catch {
                 DispatchQueue.main.async {
-                    self.delegate?.showAlert(errorDescription: "Something wrong. Please try again!")
+                    self.showAlert(with: "Something wrong. Please try again!")
                 }
             }
         }.resume()

@@ -57,8 +57,6 @@ class ViewController: UIViewController {
         collectionView.delegate = self
         collectionView.register(MyCollectionViewCell.self, forCellWithReuseIdentifier: "cell")
         
-        NetworkManager.shared.delegate = self
-        
         //        startLocationManager()
     }
     
@@ -281,16 +279,6 @@ class ViewController: UIViewController {
             fiveDaysWeatherData = fiveDaysData
             collectionView.reloadData()
         }
-    }
-}
-    
-    // MARK: NetworkManagerDelegate
-extension ViewController: NetworkManagerDelegate {
-    func showAlert(errorDescription: String) {
-        let alert = UIAlertController(title: "Error", message: errorDescription, preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
-        
-        self.present(alert, animated: true)
     }
 }
 

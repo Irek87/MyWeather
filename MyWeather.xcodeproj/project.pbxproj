@@ -15,6 +15,7 @@
 		9895CBF52A4F1C0800F1CABC /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 9895CBF32A4F1C0800F1CABC /* LaunchScreen.storyboard */; };
 		9895CBFD2A4F237B00F1CABC /* DataModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9895CBFC2A4F237B00F1CABC /* DataModels.swift */; };
 		9895CC2F2A51CEEC00F1CABC /* MyCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9895CC2E2A51CEEC00F1CABC /* MyCollectionViewCell.swift */; };
+		98D05CDE2A77DA6900AB2375 /* MessageProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 98D05CDD2A77DA6900AB2375 /* MessageProtocol.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -28,6 +29,7 @@
 		9895CBF62A4F1C0800F1CABC /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		9895CBFC2A4F237B00F1CABC /* DataModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataModels.swift; sourceTree = "<group>"; };
 		9895CC2E2A51CEEC00F1CABC /* MyCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyCollectionViewCell.swift; sourceTree = "<group>"; };
+		98D05CDD2A77DA6900AB2375 /* MessageProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageProtocol.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -93,6 +95,7 @@
 				9895CBF12A4F1C0800F1CABC /* Assets.xcassets */,
 				9895CBF32A4F1C0800F1CABC /* LaunchScreen.storyboard */,
 				9895CBF62A4F1C0800F1CABC /* Info.plist */,
+				98D05CDD2A77DA6900AB2375 /* MessageProtocol.swift */,
 			);
 			path = MyWeather;
 			sourceTree = "<group>";
@@ -173,6 +176,7 @@
 				9895CBFD2A4F237B00F1CABC /* DataModels.swift in Sources */,
 				9895CBE92A4F1C0700F1CABC /* AppDelegate.swift in Sources */,
 				9895CBEB2A4F1C0700F1CABC /* SceneDelegate.swift in Sources */,
+				98D05CDE2A77DA6900AB2375 /* MessageProtocol.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
