@@ -25,6 +25,7 @@ class CurrentWeatherView: UIView {
     let sunsetImageView = UIImageView()
     let sunsetLabel = UILabel()
     
+    // MARK: configure View
     func configure() {
         setupCityNameLabel()
         setupWeatherConditionsLabel()
