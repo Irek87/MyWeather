@@ -12,6 +12,7 @@ class ViewController: UIViewController {
     
     // MARK: UI constants
     let currentWeatherView = CurrentWeatherView()
+    let fiveDaysCollectionViewManager = FiveDaysCollectionManager()
     let collectionView: UICollectionView = {
         let layout = UICollectionViewFlowLayout()
         layout.scrollDirection = .vertical
@@ -23,7 +24,7 @@ class ViewController: UIViewController {
     // MARK: Variables
     let searchController = UISearchController()
     let locationManager = CLLocationManager()
-    var fiveDaysWeatherData: FiveDaysWeatherData?
+//    var fiveDaysWeatherData: FiveDaysWeatherData?
     
     // MARK: ViewDidLoad
     override func viewDidLoad() {
@@ -33,11 +34,7 @@ class ViewController: UIViewController {
         setupCurrentLocationButton()
         setupSearchController()
         setupCurrentWeatherView()
-        
         setupCollectionView()
-        collectionView.dataSource = self
-        collectionView.delegate = self
-        collectionView.register(MyCollectionViewCell.self, forCellWithReuseIdentifier: "cell")
         
 //        startLocationManager()
     }
@@ -90,6 +87,10 @@ class ViewController: UIViewController {
 
     // MARK: setupCollectionView
     private func setupCollectionView() {
+        collectionView.dataSource = fiveDaysCollectionViewManager
+        collectionView.delegate = fiveDaysCollectionViewManager
+        collectionView.register(MyCollectionViewCell.self, forCellWithReuseIdentifier: "cell")
+      
         collectionView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(collectionView)
         collectionView.backgroundColor = .clear
@@ -127,7 +128,7 @@ class ViewController: UIViewController {
         NetworkManager.shared.fetchData(latitude: latitude, longtitude: longtitude) { [unowned self] currentData in
             currentWeatherView.updateUI(with: currentData)
         } completionForecastData: { [unowned self] fiveDaysData in
-            fiveDaysWeatherData = fiveDaysData
+            fiveDaysCollectionViewManager.fiveDaysWeatherData = fiveDaysData
             collectionView.reloadData()
         }
     }
@@ -137,7 +138,7 @@ class ViewController: UIViewController {
         NetworkManager.shared.fetchData(city: desiredCity) { [unowned self] currentData in
             currentWeatherView.updateUI(with: currentData)
         } completionForecastData: { [unowned self] fiveDaysData in
-            fiveDaysWeatherData = fiveDaysData
+            fiveDaysCollectionViewManager.fiveDaysWeatherData = fiveDaysData
             collectionView.reloadData()
         }
     }
@@ -149,25 +150,6 @@ extension ViewController: CLLocationManagerDelegate {
         if let lastLocation = locations.last {
             updateCurrentLocationWeatherInfo(latitude: lastLocation.coordinate.latitude, longtitude: lastLocation.coordinate.longitude)
         }
-    }
-}
-
-// MARK: UICollectionView
-extension ViewController: UICollectionViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
-    
-    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        fiveDaysWeatherData?.list.count ?? 0
-    }
-    
-    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "cell", for: indexPath) as! MyCollectionViewCell
-        guard let list = fiveDaysWeatherData?.list[indexPath.item] else { return cell }
-        cell.configure(with: list)
-        return cell
-    }
-    
-    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        CGSize(width: UIScreen.main.bounds.width - 80, height: 60)
     }
 }
 
